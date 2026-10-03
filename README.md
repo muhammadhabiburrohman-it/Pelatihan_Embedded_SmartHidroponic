@@ -101,10 +101,7 @@ Tiga kontrol dapat dijalankan melalui **tombol pada panel** maupun **tombol pada
 ## 📷 Dokumentasi
 
 > Tambahkan foto alat, tampilan dashboard, dan hasil tanaman pakcoy & kangkung di sini.
-
-```
 <img width="434" height="325" alt="Hasil_Projek" src="https://github.com/user-attachments/assets/a4e05d16-ac7a-4a86-ad9c-2264196f85f7" />
-```
 
 ---
 
