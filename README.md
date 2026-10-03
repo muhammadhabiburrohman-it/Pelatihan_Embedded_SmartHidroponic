@@ -8,7 +8,7 @@ Sistem ini memantau kondisi air hidroponik secara real-time dan mengendalikan pe
 
 ## 📌 Deskripsi Proyek
 
-Smart Hydroponic adalah sistem hidroponik cerdas berbasis IoT yang membantu petani atau pembudidaya menjaga kualitas larutan nutrisi tanaman tanpa harus mengecek dan menakar secara manual terus-menerus. Data sensor ditampilkan pada dashboard website, dan pengguna dapat mengontrol pompa langsung dari dashboard atau dari tombol fisik pada panel.
+Smart Hydroponic adalah sistem hidroponik cerdas berbasis IoT yang membantu pembudidaya menjaga kualitas larutan nutrisi tanaman tanpa harus mengecek dan menakar secara manual terus-menerus. Data sensor ditampilkan pada dashboard website, termasuk ketinggian air sehingga volume air di bak penampung dapat diketahui kapan saja. Pengguna dapat mengontrol pompa langsung dari dashboard atau dari tombol fisik pada panel.
 
 **Tanaman yang dibudidayakan:**
 - 🥬 Pakcoy
@@ -24,6 +24,7 @@ Smart Hydroponic adalah sistem hidroponik cerdas berbasis IoT yang membantu peta
 | 🌡️ Suhu Air | Memantau suhu larutan nutrisi |
 | 🧪 pH Air | Memantau tingkat keasaman larutan |
 | 💧 PPM Air | Memantau kepekatan nutrisi (TDS/PPM) |
+| 📏 Ketinggian Air | Memantau jumlah air di bak penampung |
 
 ### 🎛️ Kontrol Aktuator
 Tiga kontrol dapat dijalankan melalui **tombol pada panel** maupun **tombol pada website**:
@@ -50,6 +51,7 @@ Tiga kontrol dapat dijalankan melalui **tombol pada panel** maupun **tombol pada
 - Sensor suhu air: `[contoh: DS18B20]`
 - Sensor pH: `[tipe sensor]`
 - Sensor PPM/TDS: `[tipe sensor]`
+- Sensor ketinggian air: `[contoh: ultrasonik / water level sensor]`
 - Pompa/aktuator untuk Nutrisi A, Nutrisi B, dan air
 - Relay/driver: `[tipe]`
 - Panel tombol (3 tombol: Nutrisi A, Nutrisi B, Air)
@@ -63,19 +65,19 @@ Tiga kontrol dapat dijalankan melalui **tombol pada panel** maupun **tombol pada
 
 ## ⚙️ Cara Kerja Sistem
 
-1. Sensor suhu, pH, dan PPM membaca kondisi air hidroponik.
+1. Sensor suhu, pH, PPM, dan ketinggian air membaca kondisi larutan di bak penampung.
 2. Mikrokontroler mengolah data sensor dan mengirimkannya ke website melalui jaringan internet.
-3. Website menampilkan data suhu, pH, dan PPM secara real-time.
+3. Website menampilkan data suhu, pH, PPM, dan ketinggian air secara real-time.
 4. Pengguna dapat menekan tombol **Nutrisi A**, **Nutrisi B**, atau **Tambah Air** pada **panel** atau **website**.
-5. Mikrokontroler mengaktifkan pompa yang sesuai untuk menambahkan nutrisi atau air ke bak larutan.
+5. Mikrokontroler mengaktifkan pompa yang sesuai untuk menambahkan nutrisi atau air ke bak penampung.
 
 ```
-[Sensor Suhu / pH / PPM] ──► [Mikrokontroler] ◄──► [Website Dashboard]
-                                   │
-              ┌────────────────────┼────────────────────┐
-         [Pompa Nutrisi A]   [Pompa Nutrisi B]      [Pompa Air]
-                                   ▲
-                            [Panel Tombol]
+[Sensor Suhu / pH / PPM / Level Air] ──► [Mikrokontroler] ◄──► [Website Dashboard]
+                                               │
+                  ┌────────────────────────────┼────────────────────┐
+           [Pompa Nutrisi A]           [Pompa Nutrisi B]       [Pompa Air]
+                                               ▲
+                                        [Panel Tombol]
 ```
 
 ---
@@ -117,10 +119,10 @@ Tiga kontrol dapat dijalankan melalui **tombol pada panel** maupun **tombol pada
 
 ---
 
-## 👤 Pembuat
+## 👥 Pembuat
 
-**Muhammad Habiburrohman**
-GitHub: [@muhammadhabiburrohman-it](https://github.com/muhammadhabiburrohman-it)
+**Kelompok Smart Hidroponik**
+Pelatihan Embedded System (Mikrokontroler) – UPT BLK Surabaya Gelombang 5
 
 ---
 
