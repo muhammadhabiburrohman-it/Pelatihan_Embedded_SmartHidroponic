@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Smart Hidroponik</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          body: ['Work Sans', 'sans-serif'],
+        },
+        colors: {
+          paper: '#F3F6ED',
+          leaf: '#1F3D2B',
+          leafmid: '#3F6A4C',
+          water: '#2B6CA6',
+          waterlight: '#BFE0F0',
+          amber: '#C97A2B',
+          sage: '#5B8A72',
+          ink: '#16231A',
+          line: '#D8DED0',
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  html, body { background: #F3F6ED; }
+  body { font-variant-numeric: tabular-nums; }
+  .num { font-family: 'Fraunces', serif; }
+
+  /* thermometer */
+  .thermo-tube { stroke: #D8DED0; stroke-width: 10; fill: none; }
+  .thermo-fill { stroke: #C97A2B; stroke-width: 10; fill: none; stroke-linecap: round;
+                 transition: stroke-dashoffset 900ms cubic-bezier(.4,0,.2,1); }
+  .thermo-bulb { fill: #C97A2B; }
+
+  /* water tank */
+  .tank-outline { fill: none; stroke: #1F3D2B; stroke-width: 3; }
+  .tank-water { fill: #2B6CA6; transition: y 900ms cubic-bezier(.4,0,.2,1), height 900ms cubic-bezier(.4,0,.2,1); }
+
+  /* TDS gauge (graduated cylinder) */
+  .tds-tube { stroke: #D8DED0; stroke-width: 10; fill: none; }
+  .tds-fill { stroke: #5B8A72; stroke-width: 10; fill: none; stroke-linecap: round;
+              transition: y1 900ms cubic-bezier(.4,0,.2,1); }
+  .tds-tick { stroke: #D8DED0; stroke-width: 2; }
+
+  @keyframes pulseDot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+  .dot-live { animation: pulseDot 2s ease-in-out infinite; }
+
+  ::selection { background: #BFE0F0; }
+</style>
+</head>
+
+<body class="min-h-screen text-ink font-body antialiased">
+
+  <div class="max-w-xl mx-auto px-5 pt-8 pb-16">
+
+    <!-- Header -->
+    <header class="flex items-start justify-between border-b border-line pb-5">
+      <div>
+        <h1 class="font-display text-2xl text-leaf leading-tight">Smart Hidroponik</h1>
+        <p class="text-sm text-leafmid mt-0.5">Catatan pemantauan tanaman kangkung</p>
+      </div>
+      <div class="text-right shrink-0 ml-4">
+        <p id="tanggal" class="text-xs text-leafmid"></p>
+        <div class="flex items-center justify-end gap-1.5 mt-1.5">
+          <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-line"></span>
+          <span id="status-text" class="text-xs text-leafmid">menghubungkan…</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Bacaan hari ini -->
+    <section class="mt-7">
+      <div class="grid grid-cols-2 gap-4">
+
+        <!-- Suhu air -->
+        <div class="bg-white rounded-2xl border border-line p-5 flex flex-col items-center">
+          <svg viewBox="0 0 60 130" class="h-28 w-auto" aria-hidden="true">
+            <line x1="30" y1="10" x2="30" y2="95" class="thermo-tube" stroke-linecap="round"/>
+            <line id="thermo-fill" x1="30" y1="95" x2="30" y2="95" class="thermo-fill" stroke-linecap="round"/>
+            <circle cx="30" cy="108" r="16" class="thermo-bulb"/>
+          </svg>
+          <p id="suhu-val" class="num text-3xl text-leaf mt-2">—</p>
+          <p class="text-xs text-leafmid mt-0.5">Suhu air (°C)</p>
+        </div>
+
+        <!-- Ketinggian air -->
+        <div class="bg-white rounded-2xl border border-line p-5 flex flex-col items-center">
+          <svg viewBox="0 0 80 110" class="h-28 w-auto" aria-hidden="true">
+            <defs>
+              <clipPath id="tankClip">
+                <rect x="12" y="8" width="56" height="90" rx="6"/>
+              </clipPath>
+            </defs>
+            <rect id="tank-water" class="tank-water" x="12" y="98" width="56" height="0" clip-path="url(#tankClip)"/>
+            <rect x="12" y="8" width="56" height="90" rx="6" class="tank-outline"/>
+            <line x1="12" y1="103" x2="68" y2="103" stroke="#1F3D2B" stroke-width="1" opacity="0.35"/>
+          </svg>
+          <p id="tinggi-val" class="num text-3xl text-water mt-2">—</p>
+          <p class="text-xs text-leafmid mt-0.5">Ketinggian air (%)</p>
+        </div>
+
+        <!-- TDS air -->
+        <div class="bg-white rounded-2xl border border-line p-5 flex flex-col items-center">
+          <svg viewBox="0 0 60 130" class="h-28 w-auto" aria-hidden="true">
+            <line x1="30" y1="10" x2="30" y2="105" class="tds-tube" stroke-linecap="round"/>
+            <line id="tds-fill" x1="30" y1="105" x2="30" y2="105" class="tds-fill" stroke-linecap="round"/>
+            <line x1="22" y1="30" x2="38" y2="30" class="tds-tick"/>
+            <line x1="22" y1="55" x2="38" y2="55" class="tds-tick"/>
+            <line x1="22" y1="80" x2="38" y2="80" class="tds-tick"/>
+          </svg>
+          <p id="tds-val" class="num text-3xl text-sage mt-2">—</p>
+          <p class="text-xs text-leafmid mt-0.5">PPM Air</p>
+        </div>
+
+        <!-- pH air -->
+        <div class="bg-white rounded-2xl border border-line p-5 flex flex-col items-center justify-center h-28">
+          <p id="ph-val" class="num text-4xl text-leaf">—</p>
+          <p class="text-xs text-leafmid mt-1.5">pH air</p>
+        </div>
+
+      </div>
+      <p id="last-update" class="text-xs text-leafmid text-center mt-4">Menunggu data pertama…</p>
+    </section>
+
+    <!-- Kendali sistem -->
+    <section class="mt-10">
+      <div class="flex items-center gap-3 mb-4">
+        <span class="text-sm font-medium text-leaf">Kendali sistem</span>
+        <span class="h-px flex-1 bg-line"></span>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-line divide-y divide-line">
+
+        <!-- Pompa Utama (Aksi Dinamis) -->
+        <div class="p-5 flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium text-ink">Pompa Air</p>
+            <p id="pompa-status" class="text-xs text-leafmid mt-0.5">Status: Membaca status...</p>
+          </div>
+          <button id="btn-pompa" onclick="toggleAir()"
+            class="shrink-0 text-sm font-medium bg-line text-leafmid rounded-full px-4 py-2 active:scale-95 transition">
+            Memuat...
+          </button>
+        </div>
+
+        <!-- Nutrisi -->
+        <div class="p-5 flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-medium text-ink">Nutrisi A &amp; B</p>
+            <p id="nutrisi-status" class="text-xs text-leafmid mt-0.5">Dosis manual selama 1 detik</p>
+          </div>
+          <button id="btn-nutrisi" onclick="beriNutrisi()"
+            class="shrink-0 text-sm font-medium bg-amber text-white rounded-full px-4 py-2 active:scale-95 transition disabled:opacity-50">
+            Beri nutrisi
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <footer class="mt-10 pt-5 border-t border-line text-xs text-leafmid text-center">
+      Terhubung langsung ke Firebase Realtime Database proyek Smart Hidroponik.
+    </footer>
+
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getDatabase, ref, onValue, set
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDiCD3iClAS0leDZZUUKAB85HpCz7O9L_c",
+    authDomain: "smart-hidroponik-26.firebaseapp.com",
+    databaseURL: "https://smart-hidroponik-26-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "smart-hidroponik-26",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  const statusDot = document.getElementById('status-dot');
+  const statusText = document.getElementById('status-text');
+  const lastUpdate = document.getElementById('last-update');
+
+  function setStatus(connected) {
+    if (connected) {
+      statusDot.className = 'w-1.5 h-1.5 rounded-full bg-leaf dot-live';
+      statusText.textContent = 'terhubung';
+    } else {
+      statusDot.className = 'w-1.5 h-1.5 rounded-full bg-amber';
+      statusText.textContent = 'terputus';
+    }
+  }
+
+  function formatJam(d) {
+    return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  document.getElementById('tanggal').textContent =
+    new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  signInWithEmailAndPassword(auth, "ESP32@smart-hidroponik-26.com", "BelajarHidroponik123///")
+    .catch((err) => {
+      console.error("Login gagal:", err);
+      statusText.textContent = 'gagal masuk';
+    });
+
+  onValue(ref(db, '.info/connected'), (snap) => setStatus(snap.val() === true));
+
+  function touchUpdate() {
+    lastUpdate.textContent = 'Diperbarui pukul ' + formatJam(new Date());
+  }
+
+  // --- Suhu air ---
+  const suhuVal = document.getElementById('suhu-val');
+  const thermoFill = document.getElementById('thermo-fill');
+  const SUHU_MIN = 0, SUHU_MAX = 60, TUBE_TOP = 95, TUBE_BOTTOM = 10;
+
+  onValue(ref(db, '/monitoring/suhu_air'), (snap) => {
+    const v = snap.val();
+    if (v === null) return;
+    suhuVal.textContent = Number(v).toFixed(1);
+    const frac = Math.min(1, Math.max(0, (v - SUHU_MIN) / (SUHU_MAX - SUHU_MIN)));
+    const y = TUBE_TOP - frac * (TUBE_TOP - TUBE_BOTTOM);
+    thermoFill.setAttribute('y1', TUBE_TOP);
+    thermoFill.setAttribute('y2', y);
+    touchUpdate();
+  });
+
+  // --- Ketinggian air ---
+  const tinggiVal = document.getElementById('tinggi-val');
+  const tankWater = document.getElementById('tank-water');
+  const TANK_TOP = 8, TANK_BOTTOM = 98, TANK_HEIGHT = TANK_BOTTOM - TANK_TOP;
+
+  onValue(ref(db, '/monitoring/ketinggian_air'), (snap) => {
+    const v = snap.val();
+    if (v === null) return;
+    tinggiVal.textContent = Number(v).toFixed(0);
+    const frac = Math.min(1, Math.max(0, v / 100));
+    const h = frac * TANK_HEIGHT;
+    tankWater.setAttribute('height', h);
+    tankWater.setAttribute('y', TANK_BOTTOM - h);
+    touchUpdate();
+  });
+
+  // --- PPM ---
+  const tdsVal = document.getElementById('tds-val');
+  const tdsFill = document.getElementById('tds-fill');
+  const TDS_MIN = 0, TDS_MAX = 1500, TDS_TOP = 105, TDS_BOTTOM = 10;
+
+  onValue(ref(db, '/monitoring/PPM'), (snap) => {
+    const v = snap.val();
+    if (v === null) return;
+    tdsVal.textContent = Number(v).toFixed(0);
+    const frac = Math.min(1, Math.max(0, (v - TDS_MIN) / (TDS_MAX - TDS_MIN)));
+    const y = TDS_TOP - frac * (TDS_TOP - TDS_BOTTOM);
+    tdsFill.setAttribute('y1', TDS_TOP);
+    tdsFill.setAttribute('y2', y);
+    touchUpdate();
+  });
+
+  // --- pH air ---
+  const phVal = document.getElementById('ph-val');
+
+  onValue(ref(db, '/monitoring/PH'), (snap) => {
+    const v = snap.val();
+    if (v === null) return;
+    phVal.textContent = Number(v).toFixed(1);
+    touchUpdate();
+  });
+
+  // --- KENDALI POMPA AIR (Sinkron Dinamis Dua Arah) ---
+  const btnPompa = document.getElementById('btn-pompa');
+  const pompaStatus = document.getElementById('pompa-status');
+  let currentPompaState = false;
+
+  onValue(ref(db, '/kontrol/air'), (snap) => {
+    currentPompaState = snap.val() === true;
+    
+    if (currentPompaState) {
+      // Jika Pompa AKTIF
+      pompaStatus.textContent = "Status: Pompa Menyala";
+      pompaStatus.className = "text-xs text-sage font-medium mt-0.5";
+      btnPompa.textContent = "Matikan Pompa";
+      btnPompa.className = "shrink-0 text-sm font-medium bg-red-600 text-white rounded-full px-4 py-2 active:scale-95 transition";
+    } else {
+      // Jika Pompa MATI
+      pompaStatus.textContent = "Status: Pompa Mati";
+      pompaStatus.className = "text-xs text-leafmid mt-0.5";
+      btnPompa.textContent = "Nyalakan Pompa";
+      btnPompa.className = "shrink-0 text-sm font-medium bg-leaf text-white rounded-full px-4 py-2 active:scale-95 transition";
+    }
+  });
+
+  window.toggleAir = function () {
+    // Kirim status kebalikan ke Firebase
+    set(ref(db, '/kontrol/air'), !currentPompaState);
+  };
+
+  // --- KENDALI NUTRISI (Dengan Anti-Bounce & Auto-Reset Multi-Layer) ---
+  const btnNutrisi = document.getElementById('btn-nutrisi');
+  const nutrisiStatus = document.getElementById('nutrisi-status');
+  let isNutrisiProcessing = false;
+
+  // Mendengarkan perubahan status /kontrol/Nutrisi dari Firebase
+  onValue(ref(db, '/kontrol/Nutrisi'), (snap) => {
+    const isNutrisiActive = snap.val() === true;
+
+    if (isNutrisiActive || isNutrisiProcessing) {
+      btnNutrisi.disabled = true;
+      btnNutrisi.textContent = 'Memberikan nutrisi…';
+      nutrisiStatus.textContent = 'Status: Relay Nutrisi Aktif (1 Detik)';
+      nutrisiStatus.className = 'text-xs text-amber font-medium mt-0.5';
+    } else {
+      btnNutrisi.disabled = false;
+      btnNutrisi.textContent = 'Beri nutrisi';
+      nutrisiStatus.textContent = 'Dosis manual selama 1 detik';
+      nutrisiStatus.className = 'text-xs text-leafmid mt-0.5';
+    }
+  });
+
+  window.beriNutrisi = function () {
+    if (isNutrisiProcessing) return;
+
+    // Kunci tombol di browser secara instan
+    isNutrisiProcessing = true;
+    btnNutrisi.disabled = true;
+    btnNutrisi.textContent = 'Memberikan nutrisi…';
+
+    // 1. Set status Nutrisi menjadi true di Firebase
+    set(ref(db, '/kontrol/Nutrisi'), true)
+      .then(() => {
+        // 2. Tunggu 1.2 detik (melebihi timer 1 detik ESP32), lalu kembalikan Firebase ke false
+        setTimeout(() => {
+          set(ref(db, '/kontrol/Nutrisi'), false).finally(() => {
+            isNutrisiProcessing = false;
+          });
+        }, 1200);
+      })
+      .catch((err) => {
+        console.error("Gagal mengirim perintah nutrisi:", err);
+        isNutrisiProcessing = false;
+        btnNutrisi.disabled = false;
+      });
+  };
+</script>
+</body>
+</html>
