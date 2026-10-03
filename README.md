@@ -99,9 +99,11 @@ Tiga kontrol dapat dijalankan melalui **tombol pada panel** maupun **tombol pada
 ---
 
 ## 📷 Dokumentasi
-
-> Tambahkan foto alat, tampilan dashboard, dan hasil tanaman pakcoy & kangkung di sini.
 <img width="434" height="325" alt="Hasil_Projek" src="https://github.com/user-attachments/assets/a4e05d16-ac7a-4a86-ad9c-2264196f85f7" />
+<img width="308" height="302" alt="Monitoring" src="https://github.com/user-attachments/assets/bd907303-fae7-4318-a859-bc7e14d71bc8" />
+<img width="638" height="439" alt="Wiring_Komponen" src="https://github.com/user-attachments/assets/326029f7-3fa6-4aa0-bb5a-4b9c898a44c9" />
+<img width="453" height="226" alt="Kontroling" src="https://github.com/user-attachments/assets/ad526efd-fcb4-475d-b297-4b282fcf596e" />
+
 
 ---
 
